@@ -57,38 +57,57 @@ class TextViewer(QMainWindow):
                 self.text_edit.setText(f"Error opening file: {str(e)}")
                 self.text_edit.setFocus()
 
-    def increase_font(self):
-        current_size = self.text_edit.fontPointSize()
-        # Select all text
+    def _change_font_size(self, delta):
+        if delta < 0 and self.text_edit.fontPointSize() <= 1:  # Prevent font from becoming too small
+            return
+            
+        # Get current cursor and scrollbar positions
         cursor = self.text_edit.textCursor()
-        # Save current cursor
+        scrollbar = self.text_edit.verticalScrollBar()
+        
+        # Calculate cursor's position relative to viewport
+        cursor_rect = self.text_edit.cursorRect(cursor)
+        cursor_center = cursor_rect.center()
+        viewport_offset = cursor_center.y()
+
+        # Get current size and save cursor position
+        current_size = self.text_edit.fontPointSize()
         position = cursor.position()
+        
+        # Change font size (select all text and apply new size)
         cursor.select(cursor.SelectionType.Document)
         self.text_edit.setTextCursor(cursor)
-        # Increase font size
-        self.text_edit.setFontPointSize(current_size + 1)
-        # Restore original cursor
+        self.text_edit.setFontPointSize(current_size + delta)
+        
+        # Restore cursor position
         cursor.setPosition(position)
         self.text_edit.setTextCursor(cursor)
         self.text_edit.ensureCursorVisible()
+
+        # Where's the current cursor?
+        cursor_rect = self.text_edit.cursorRect(cursor)
+        cursor_center = cursor_rect.center()
+
+        # Where's the current scrollbar?
+        scrollbar = self.text_edit.verticalScrollBar()
+
+        scrollbar_adjustment = cursor_center.y() - viewport_offset
+        scrollbar.setValue(scrollbar.value() + scrollbar_adjustment)
+
         self.text_edit.setFocus()
+        
+        # Calculate new cursor position and adjust scroll
+        # new_cursor_rect = self.text_edit.cursorRect(cursor)
+        # new_viewport_offset = new_cursor_rect.y()
+        # scroll_adjustment = new_viewport_offset - viewport_offset
+        # scrollbar.setValue(current_scroll + scroll_adjustment)
+        
+
+    def increase_font(self):
+        self._change_font_size(1)
 
     def decrease_font(self):
-        current_size = self.text_edit.fontPointSize()
-        if current_size > 1:  # Prevent font from becoming too small
-            # Select all text
-            cursor = self.text_edit.textCursor()
-            # Save current cursor
-            position = cursor.position()
-            cursor.select(cursor.SelectionType.Document)
-            self.text_edit.setTextCursor(cursor)
-            # Decrease font size
-            self.text_edit.setFontPointSize(current_size - 1)
-            # Restore original cursor
-            cursor.setPosition(position)
-            self.text_edit.setTextCursor(cursor)
-            self.text_edit.ensureCursorVisible()
-            self.text_edit.setFocus()
+        self._change_font_size(-1)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
