@@ -16,6 +16,7 @@ class TextViewer(QMainWindow):
         self.text_edit = QTextEdit()
         self.text_edit.setReadOnly(False)  # Make it editable
         self.text_edit.setFontPointSize(12)  # Set initial font size
+        self.text_edit.ensureCursorVisible()
         layout.addWidget(self.text_edit)
 
         # Create button layout
@@ -51,8 +52,10 @@ class TextViewer(QMainWindow):
                 with open(file_name, 'r', encoding='utf-8') as file:
                     content = file.read()
                     self.text_edit.setText(content)
+                    self.text_edit.setFocus()
             except Exception as e:
                 self.text_edit.setText(f"Error opening file: {str(e)}")
+                self.text_edit.setFocus()
 
     def increase_font(self):
         current_size = self.text_edit.fontPointSize()
@@ -68,6 +71,7 @@ class TextViewer(QMainWindow):
         cursor.setPosition(position)
         self.text_edit.setTextCursor(cursor)
         self.text_edit.ensureCursorVisible()
+        self.text_edit.setFocus()
 
     def decrease_font(self):
         current_size = self.text_edit.fontPointSize()
@@ -84,6 +88,7 @@ class TextViewer(QMainWindow):
             cursor.setPosition(position)
             self.text_edit.setTextCursor(cursor)
             self.text_edit.ensureCursorVisible()
+            self.text_edit.setFocus()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
