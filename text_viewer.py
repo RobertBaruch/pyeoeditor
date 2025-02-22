@@ -14,7 +14,7 @@ class TextViewer(QMainWindow):
 
         # Create text edit widget
         self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)  # Make it read-only
+        self.text_edit.setReadOnly(False)  # Make it editable
         self.text_edit.setFontPointSize(12)  # Set initial font size
         layout.addWidget(self.text_edit)
 
@@ -56,17 +56,34 @@ class TextViewer(QMainWindow):
 
     def increase_font(self):
         current_size = self.text_edit.fontPointSize()
-        print(f"Current font size: {current_size}")
+        # Select all text
+        cursor = self.text_edit.textCursor()
+        # Save current cursor
+        position = cursor.position()
+        cursor.select(cursor.SelectionType.Document)
+        self.text_edit.setTextCursor(cursor)
+        # Increase font size
         self.text_edit.setFontPointSize(current_size + 1)
-        # Reapply the font size to all text
-        self.text_edit.setText(self.text_edit.toPlainText())
+        # Restore original cursor
+        cursor.setPosition(position)
+        self.text_edit.setTextCursor(cursor)
+        self.text_edit.ensureCursorVisible()
 
     def decrease_font(self):
         current_size = self.text_edit.fontPointSize()
         if current_size > 1:  # Prevent font from becoming too small
+            # Select all text
+            cursor = self.text_edit.textCursor()
+            # Save current cursor
+            position = cursor.position()
+            cursor.select(cursor.SelectionType.Document)
+            self.text_edit.setTextCursor(cursor)
+            # Decrease font size
             self.text_edit.setFontPointSize(current_size - 1)
-            # Reapply the font size to all text
-            self.text_edit.setText(self.text_edit.toPlainText())
+            # Restore original cursor
+            cursor.setPosition(position)
+            self.text_edit.setTextCursor(cursor)
+            self.text_edit.ensureCursorVisible()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
