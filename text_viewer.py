@@ -1,5 +1,18 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QFileDialog
+from PyQt6.QtGui import QPainter, QColor, QTextFormat
+from PyQt6.QtCore import Qt, QRect, QSize
+
+class LineNumberArea(QWidget):
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.editor = editor
+
+    def sizeHint(self):
+        return QSize(self.editor.line_number_area_width(), 0)
+
+    def paintEvent(self, event):
+        self.editor.line_number_area_paint_event(event)
 
 class TextViewer(QMainWindow):
     def __init__(self):
@@ -12,12 +25,16 @@ class TextViewer(QMainWindow):
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
+        # Create horizontal layout for line numbers and text edit
+        editor_layout = QHBoxLayout()
+        layout.addLayout(editor_layout)
+
         # Create text edit widget
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(False)  # Make it editable
-        self.text_edit.setFontPointSize(12)  # Set initial font size
+        self.text_edit = LineNumberedTextEdit()
+        self.text_edit.setReadOnly(False)
+        self.text_edit.setFontPointSize(12)
         self.text_edit.ensureCursorVisible()
-        layout.addWidget(self.text_edit)
+        editor_layout.addWidget(self.text_edit)
 
         # Create button layout
         button_layout = QHBoxLayout()
@@ -94,20 +111,67 @@ class TextViewer(QMainWindow):
         scrollbar_adjustment = cursor_center.y() - viewport_offset
         scrollbar.setValue(scrollbar.value() + scrollbar_adjustment)
 
-        self.text_edit.setFocus()
-        
-        # Calculate new cursor position and adjust scroll
-        # new_cursor_rect = self.text_edit.cursorRect(cursor)
-        # new_viewport_offset = new_cursor_rect.y()
-        # scroll_adjustment = new_viewport_offset - viewport_offset
-        # scrollbar.setValue(current_scroll + scroll_adjustment)
-        
+        self.text_edit.setFocus()        
 
     def increase_font(self):
         self._change_font_size(1)
 
     def decrease_font(self):
         self._change_font_size(-1)
+
+class LineNumberedTextEdit(QTextEdit):
+    def __init__(self):
+        super().__init__()
+        self.line_number_area = LineNumberArea(self)
+        
+        self.document().blockCountChanged.connect(self.update_line_number_area_width)
+        self.verticalScrollBar().valueChanged.connect(self.line_number_area.update)
+        self.textChanged.connect(self.line_number_area.update)
+        self.update_line_number_area_width()
+
+    def line_number_area_width(self):
+        digits = len(str(max(1, self.document().blockCount())))
+        space = 3 + self.fontMetrics().horizontalAdvance('9') * digits
+        return space
+
+    def update_line_number_area_width(self):
+        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        cr = self.contentsRect()
+        self.line_number_area.setGeometry(
+            QRect(cr.left(), cr.top(),
+                  self.line_number_area_width(), cr.height()))
+
+    def line_number_area_paint_event(self, event):
+        painter = QPainter(self.line_number_area)
+        painter.fillRect(event.rect(), Qt.GlobalColor.lightGray)
+
+        # Get the first visible block
+        viewport_offset = self.verticalScrollBar().value()
+        page_bottom = viewport_offset + self.viewport().height()
+        
+        block = self.document().begin()
+        block_number = 0
+        top = self.document().documentLayout().blockBoundingRect(block).top() - viewport_offset
+
+        while block.isValid():
+            bottom = top + self.document().documentLayout().blockBoundingRect(block).height()
+            
+            if top >= 0 and top <= page_bottom:
+                number = str(block_number + 1)
+                painter.setPen(Qt.GlobalColor.black)
+                painter.drawText(0, int(top), self.line_number_area.width(),
+                               self.fontMetrics().height(),
+                               Qt.AlignmentFlag.AlignRight, number)
+
+            block = block.next()
+            top = bottom
+            block_number += 1
+            
+            if top > page_bottom:
+                break
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
