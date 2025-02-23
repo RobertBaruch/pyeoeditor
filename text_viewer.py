@@ -115,7 +115,8 @@ class TextViewer(QMainWindow):
             "DejaVu Sans Mono",
             "Courier New",
             "Monaco",
-            "Menlo"
+            "Menlo",
+            "Arial",
         ]
         
         # Test characters to check (as a string)
