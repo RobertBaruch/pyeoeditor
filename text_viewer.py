@@ -173,6 +173,13 @@ class LineNumberedTextEdit(QTextEdit):
             if top > page_bottom:
                 break
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            cursor = self.textCursor()
+            cursor.insertBlock()
+        else:
+            super().keyPressEvent(event)  # Handle all other keys normally
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = TextViewer()
