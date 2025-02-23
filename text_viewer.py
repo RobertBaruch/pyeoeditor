@@ -21,6 +21,7 @@ class TextViewer(QMainWindow):
         self.text_edit = LineNumberedTextEdit()
         self.text_edit.setReadOnly(False)
         self.text_edit.setFontPointSize(12)
+        self.set_preferred_font()
         self.text_edit.ensureCursorVisible()
         editor_layout.addWidget(self.text_edit)
 
@@ -105,4 +106,20 @@ class TextViewer(QMainWindow):
         self._change_font_size(1)
 
     def decrease_font(self):
-        self._change_font_size(-1) 
+        self._change_font_size(-1)
+
+    def set_preferred_font(self):
+        preferred_fonts = [
+            "Consolas",
+            "DejaVu Sans Mono",
+            "Courier New",
+            "Monaco",
+            "Menlo"
+        ]
+        
+        font = self.text_edit.font()
+        for font_family in preferred_fonts:
+            font.setFamily(font_family)
+            if font.exactMatch():
+                self.text_edit.setFont(font)
+                return 
