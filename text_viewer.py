@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, 
                             QWidget, QPushButton, QFileDialog)
+from PyQt6.QtGui import QRawFont
 from line_numbered_text_edit import LineNumberedTextEdit
 
 class TextViewer(QMainWindow):
@@ -117,9 +118,18 @@ class TextViewer(QMainWindow):
             "Menlo"
         ]
         
-        font = self.text_edit.font()
+        # Test characters to check (as a string)
+        test_chars = "ĉĝĥĵŝŭ“”"
+        
         for font_family in preferred_fonts:
+            font = self.text_edit.font()
             font.setFamily(font_family)
-            if font.exactMatch():
+            raw_font = QRawFont.fromFont(font)
+            
+            # Check if font supports all test characters
+            supports_all = all(raw_font.supportsCharacter(char) for char in test_chars)
+            
+            if font.exactMatch() and supports_all:
                 self.text_edit.setFont(font)
+                print(f"Using font: {font_family}")
                 return 
