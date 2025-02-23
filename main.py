@@ -1,8 +1,12 @@
-from absl import app
-from absl import flags
+import sys
+from PyQt6.QtWidgets import QApplication
+from text_viewer import TextViewer
 
-def main(argv):
-    print('Hello, World!')
+def main():
+    app = QApplication(sys.argv)
+    window = TextViewer()
+    window.show()
+    sys.exit(app.exec())
 
 if __name__ == '__main__':
-    app.run(main)
+    main()

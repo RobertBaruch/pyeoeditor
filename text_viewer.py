@@ -1,7 +1,5 @@
-import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, 
+from PyQt6.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, 
                             QWidget, QPushButton, QFileDialog)
-from PyQt6.QtCore import Qt
 from line_numbered_text_edit import LineNumberedTextEdit
 
 class TextViewer(QMainWindow):
@@ -107,10 +105,4 @@ class TextViewer(QMainWindow):
         self._change_font_size(1)
 
     def decrease_font(self):
-        self._change_font_size(-1)
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = TextViewer()
-    window.show()
-    sys.exit(app.exec()) 
+        self._change_font_size(-1) 
